@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Obter Conversas do ChatBot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <h1>Obter Conversas do Bot</h1>
+  <form id="form">
+    <label for="chatbotId">ID do Chatbot:</label>
+    <select id="chatbotId" name="chatbotId" required>
+      <option value="">Selecione um chatbot</option>
+      <option value="S3LbSozmhvu42QEeMKkPq">Renovar Smart Bot</option>
+      <option value="S3LbSozmhvu42QEeMKkPq2">Bot Livre</option>
+      <option value="S3LbSozmhvu42QEeMKkPq3">Bot Livre</option>
+    </select>
+    <br>
+    <label for="start_date">Data de Início:</label>
+    <input type="date" id="start_date" name="start_date" required>
+    <br>
+    <label for="end_date">Data de Fim:</label>
+    <input type="date" id="end_date" name="end_date" required>
+    <br>
+    <button type="submit">Enviar</button>
+  </form>
+
+  <h2>Conversas</h2>
+  <table id="conversas_table">
+    <thead>
+      <tr>
+        <th>Bot (Assistente)</th>
+        <th>Conteúdo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Os dados serão preenchidos aqui -->
+    </tbody>
+  </table>
+
+  <script>
+    document.getElementById('form').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const chatbotId = document.getElementById('chatbotId').value;
+      const startDate = document.getElementById('start_date').value;
+      const endDate = document.getElementById('end_date').value;
+
+      fetch('/obter_conversas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatbotId: chatbotId,
+          start_date: startDate,
+          end_date: endDate,
+        }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          const tableBody = document.getElementById('conversas_table').querySelector('tbody');
+          tableBody.innerHTML = ''; // Limpa os dados anteriores
+
+          data.data.forEach(conversa => {
+            conversa.messages.forEach(message => {
+              const row = document.createElement('tr');
+
+              const remetenteCell = document.createElement('td');
+              remetenteCell.textContent = message.role === 'assistant' ? 'Assistente' : 'Cliente';
+              row.appendChild(remetenteCell);
+
+              const contentCell = document.createElement('td');
+              contentCell.textContent = message.content;
+              row.appendChild(contentCell);
+
+              tableBody.appendChild(row);
+            });
+          });
+        })
+        .catch(error => console.error('Erro ao obter conversas:', error));
+    });
+  </script>
+</body>
+
+</html>
